@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MHWilds Build Studio</title>
+    <style>
+        :root {
+            --bg-color: #121214;
+            --panel-bg: #1a1a1e;
+            --panel-border: #2a2a32;
+            --accent-orange: #f59e0b;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --danger: #ef4444;
+            --success: #10b981;
+            --series-color: #60a5fa;
+            --group-color: #34d399;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            margin: 0;
+            padding: 15px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--panel-border);
+            padding-bottom: 10px;
+        }
+        header h1 {
+            color: var(--accent-orange);
+            margin: 0 0 5px 0;
+            font-size: 20px;
+        }
+        header p {
+            color: var(--text-muted);
+            margin: 0;
+            font-size: 12px;
+        }
+        .admin-link-btn {
+            background-color: #374151;
+            color: white;
+            border: 1px solid var(--panel-border);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .admin-link-btn:hover { background-color: var(--accent-orange); color: #000; }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .panel {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            padding: 15px;
+        }
+        h2 {
+            font-size: 15px;
+            color: var(--accent-orange);
+            border-left: 3px solid var(--accent-orange);
+            padding-left: 8px;
+            margin-top: 0;
+            margin-bottom: 12px;
+        }
+        .category-title {
+            font-weight: bold;
+            color: var(--text-muted);
+            margin: 12px 0 6px 0;
+            font-size: 12px;
+            border-bottom: 1px dashed var(--panel-border);
+            padding-bottom: 3px;
+        }
+        .skill-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            font-size: 13px;
+        }
+        .switch-btn {
+            background-color: #374151;
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .switch-btn.active {
+            background-color: var(--accent-orange);
+            color: #000;
+        }
+        .required-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.03);
+            padding: 6px 10px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            font-size: 13px;
+        }
+        .required-item select {
+            background: #2a2a32;
+            color: white;
+            border: 1px solid var(--panel-border);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .preview-box {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
+            padding: 10px;
+            min-height: 80px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+        .search-btn {
+            width: 100%;
+            background-color: var(--accent-orange);
+            color: #000;
+            border: none;
+            padding: 12px;
+            font-weight: bold;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+        .result-box {
+            background: #0d0d0f;
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 12px;
+            min-height: 60px;
+        }
+        .tag-series { color: var(--series-color); font-size: 0.85em; }
+        .tag-group { color: var(--group-color); font-size: 0.85em; }
+        
+        /* 管理画面用スタイル */
+        .hidden { display: none !important; }
+        textarea {
+            width: 100%;
+            height: 150px;
+            background: #0d0d0f;
+            color: var(--text-main);
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
+            padding: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+        .btn {
+            background-color: var(--accent-orange);
+            color: #000;
+            border: none;
+            padding: 10px 15px;
+            font-weight: bold;
+            font-size: 13px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .btn-secondary { background-color: #374151; color: #fff; margin-top: 8px; }
+        .status-msg { margin-top: 8px; font-size: 12px; display: block; }
+        .preview-list {
+            background: #0d0d0f;
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
+            padding: 8px;
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>
+            <h1>MHWilds Build Studio</h1>
+            <p>スマホ完結型シミュレーター</p>
+        </div>
+        <button class="admin-link-btn" id="mode-switch-btn" onclick="toggleMode()">管理者モード</button>
+    </header>
+
+<div class="container">
+    <!-- ■ シミュレーター画面 -->
+    <div id="simulator-view">
+        <div class="panel">
+            <h2>スキル選択</h2>
+            <div id="skill-selector-container">読み込み中...</div>
+        </div>
+
+        <div class="panel">
+            <h2>要求スキル設定</h2>
+            <div id="required-skills-container" class="preview-box">
+                <span style="color: var(--text-muted);">スキル未選択</span>
+            </div>
+
+            <h2>条件プレビュー</h2>
+            <div class="preview-box" id="build-preview">
+                <span style="color: var(--text-muted);">ここに検索条件が表示されます</span>
+            </div>
+
+            <button class="search-btn" onclick="executeSearch()">検索開始</button>
+
+            <h2>検索結果</h2>
+            <div class="result-box" id="search-result">
+                条件を設定して「検索開始」を押してください。
+            </div>
+        </div>
+    </div>
+
+    <!-- ■ 管理者ページ（初期状態は非表示、パスコード2975で開く） -->
+    <div id="admin-view" class="panel hidden">
+        <h2>防具データ 一括登録</h2>
+        <textarea id="bulk-json-input" placeholder="[ { &quot;name&quot;: &quot;ゴグヘルム&quot;, &quot;part&quot;: &quot;頭&quot;, ... } ]"></textarea>
+        <button class="btn" onclick="bulkImportArmors()">防具を一括追加・更新</button>
+        <span id="import-status" class="status-msg"></span>
+
+        <h2 style="margin-top: 20px;">スキルデータ 一括登録</h2>
+        <textarea id="bulk-skill-json-input" placeholder="{ &quot;攻撃系&quot;: [...] }"></textarea>
+        <button class="btn" onclick="bulkImportSkills()">スキルを一括更新</button>
+        <span id="skill-import-status" class="status-msg"></span>
+
+        <h2 style="margin-top: 20px;">登録済みデータ状況</h2>
+        <div class="preview-list" id="registered-preview">読み込み中...</div>
+        <button class="btn btn-secondary" onclick="clearAllData()">データをすべてリセット</button>
+    </div>
+</div>
+
+<script>
+    const STORAGE_KEY_ARMORS = "mhwilds_armors_data";
+    const STORAGE_KEY_SKILLS = "mhwilds_skills_data";
+    const activeSkills = {};
+    let isAdminMode = false;
+
+    function getSkillsData() {
+        const data = localStorage.getItem(STORAGE_KEY_SKILLS);
+        if (data) return JSON.parse(data);
+        return {
+            "攻撃系": [
+                { name: "連撃", maxLv: 5 },
+                { name: "挑戦者", maxLv: 5 },
+                { name: "渾身", maxLv: 3 },
+                { name: "フルチャージ", maxLv: 3 },
+                { name: "巧撃", maxLv: 3 }
+            ],
+            "生存・便利系": [
+                { name: "早食い", maxLv: 3 }
+            ],
+            "シリーズスキル": [
+                { name: "巨戟龍の黙示録", subName: "黒い重油など", maxLv: 2 }
+            ]
+        };
+    }
+
+    function getArmorsData() {
+        const data = localStorage.getItem(STORAGE_KEY_ARMORS);
+        return data ? JSON.parse(data) : [];
+    }
+
+    function initSkillSelector() {
+        const container = document.getElementById('skill-selector-container');
+        if (!container) return;
+        container.innerHTML = '';
+        const skillsData = getSkillsData();
+
+        for (const [category, skills] of Object.entries(skillsData)) {
+            if (!skills || skills.length === 0) continue;
+            const catDiv = document.createElement('div');
+            catDiv.innerHTML = `<div class="category-title">▶ ${category}</div>`;
+            
+            skills.forEach(skill => {
+                const row = document.createElement('div');
+                row.className = 'skill-row';
+                const isActive = activeSkills[skill.name] !== undefined;
+
+                let displayName = skill.name;
+                if (category === "シリーズスキル") {
+                    displayName += ` <span class="tag-series">[${skill.subName || ''}]</span>`;
+                } else if (category === "グループスキル") {
+                    displayName += ` <span class="tag-group">[${skill.subName || ''}]</span>`;
+                }
+
+                row.innerHTML = `
+                    <span>${displayName}</span>
+                    <button class="switch-btn ${isActive ? 'active' : ''}" onclick="toggleSkill('${skill.name}', ${skill.maxLv})">
+                        ${isActive ? 'ON' : 'OFF'}
+                    </button>
+                `;
+                catDiv.appendChild(row);
+            });
+            container.appendChild(catDiv);
+        }
+        renderRequiredSkills();
+    }
+
+    function toggleSkill(skillName, maxLv) {
+        if (activeSkills[skillName] !== undefined) {
+            delete activeSkills[skillName];
+        } else {
+            activeSkills[skillName] = maxLv;
+        }
+        initSkillSelector();
+    }
+
+    function renderRequiredSkills() {
+        const container = document.getElementById('required-skills-container');
+        const previewContainer = document.getElementById('build-preview');
+        if (!container) return;
+        const skillsData = getSkillsData();
+        
+        const keys = Object.keys(activeSkills);
+        if (keys.length === 0) {
+            container.innerHTML = `<span style="color: var(--text-muted);">スキル未選択</span>`;
+            previewContainer.innerHTML = `<span style="color: var(--text-muted);">ここに検索条件が表示されます</span>`;
+            return;
+        }
+
+        container.innerHTML = '';
+        let previewHtml = '<strong>【有効スキル】</strong><br>';
+
+        keys.forEach(skillName => {
+            let maxLv = 5;
+            let subName = "";
+            let category = "";
+
+            for (const cat in skillsData) {
+                const found = skillsData[cat].find(s => s.name === skillName);
+                if (found) {
+                    maxLv = found.maxLv;
+                    subName = found.subName || "";
+                    category = cat;
+                }
+            }
+
+            let labelText = skillName;
+            if (category === "シリーズスキル") labelText += ` <span class="tag-series">[${subName}]</span>`;
+            if (category === "グループスキル") labelText += ` <span class="tag-group">[${subName}]</span>`;
+
+            const item = document.createElement('div');
+            item.className = 'required-item';
+            item.innerHTML = `
+                <span style="font-weight:bold;">${labelText}</span>
+                <select onchange="updateSkillLevel('${skillName}', this.value)">
+                    ${Array.from({length: maxLv}, (_, i) => i + 1).map(lv => 
+                        `<option value="${lv}" ${activeSkills[skillName] == lv ? 'selected' : ''}>Lv ${lv}</option>`
+                    ).join('')}
+                </select>
+            `;
+            container.appendChild(item);
+            previewHtml += `${skillName} : Lv ${activeSkills[skillName]}<br>`;
+        });
+
+        previewContainer.innerHTML = previewHtml;
+    }
+
+    function updateSkillLevel(skillName, level) {
+        activeSkills[skillName] = parseInt(level);
+        renderRequiredSkills();
+    }
+
+    function executeSearch() {
+        const resultBox = document.getElementById('search-result');
+        const armors = getArmorsData();
+        const keys = Object.keys(activeSkills);
+
+        if (keys.length === 0) {
+            resultBox.innerHTML = '<span style="color: var(--danger);">要求スキルが選択されていません。</span>';
+            return;
+        }
+
+        resultBox.innerHTML = `
+            <span style="color: var(--success); font-weight:bold;">✔ 検索OK</span><br>
+            登録済み防具: <strong>${armors.length}件</strong><br>
+            <span style="color: var(--text-muted);">ストレージから正常に読み込まれています。</span>
+        `;
+    }
+
+    // 管理者モードの切り替え（パスコード: 2975）
+    function toggleMode() {
+        if (!isAdminMode) {
+            const passcode = prompt("管理者パスコードを入力してください:");
+            if (passcode === "2975") {
+                isAdminMode = true;
+                document.getElementById('simulator-view').classList.add('hidden');
+                document.getElementById('admin-view').classList.remove('hidden');
+                document.getElementById('mode-switch-btn').textContent = "シミュレーターに戻る";
+                updateAdminStatus();
+            } else if (passcode !== null) {
+                alert("パスコードが違います。");
+            }
+        } else {
+            isAdminMode = false;
+            document.getElementById('admin-view').classList.add('hidden');
+            document.getElementById('simulator-view').classList.remove('hidden');
+            document.getElementById('mode-switch-btn').textContent = "管理者モード";
+            initSkillSelector();
+        }
+    }
+
+    function updateAdminStatus() {
+        const armors = getArmorsData();
+        const skills = getSkillsData();
+        const previewEl = document.getElementById('registered-preview');
+        let skillCount = Object.values(skills).reduce((acc, list) => acc + list.length, 0);
+
+        previewEl.innerHTML = `登録防具数: <strong>${armors.length}件</strong><br>登録スキル数: <strong>${skillCount}件</strong>`;
+    }
+
+    function bulkImportArmors() {
+        const inputStr = document.getElementById('bulk-json-input').value;
+        const statusEl = document.getElementById('import-status');
+        try {
+            const newArmors = JSON.parse(inputStr);
+            if (!Array.isArray(newArmors)) throw new Error("配列形式ではありません");
+            localStorage.setItem(STORAGE_KEY_ARMORS, JSON.stringify(newArmors));
+            statusEl.innerHTML = `<span style="color:var(--success);">✔ 防具データを保存しました (${newArmors.length}件)</span>`;
+            updateAdminStatus();
+        } catch (e) {
+            statusEl.innerHTML = `<span style="color:var(--danger);">✖ エラー: ${e.message}</span>`;
+        }
+    }
+
+    function bulkImportSkills() {
+        const inputStr = document.getElementById('bulk-skill-json-input').value;
+        const statusEl = document.getElementById('skill-import-status');
+        try {
+            const newSkills = JSON.parse(inputStr);
+            localStorage.setItem(STORAGE_KEY_SKILLS, JSON.stringify(newSkills));
+            statusEl.innerHTML = `<span style="color:var(--success);">✔ スキルデータを更新しました！</span>`;
+            updateAdminStatus();
+        } catch (e) {
+            statusEl.innerHTML = `<span style="color:var(--danger);">✖ エラー: ${e.message}</span>`;
+        }
+    }
+
+    function clearAllData() {
+        if (confirm("保存されているすべての防具・スキルデータをリセットしますか？")) {
+            localStorage.removeItem(STORAGE_KEY_ARMORS);
+            localStorage.removeItem(STORAGE_KEY_SKILLS);
+            updateAdminStatus();
+        }
+    }
+
+    // 初回初期化
+    initSkillSelector();
+</script>
+
+</body>
+</html>
